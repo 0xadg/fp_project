@@ -7,6 +7,7 @@ import sttp.client4.Response
 import scala.util.Using
 import scala.collection.immutable.ListMap
 import scala.io.Source
+import scala.util.Random
 import scala.concurrent._
 import ExecutionContext.Implicits.global
 
@@ -36,24 +37,6 @@ object DataProvider {
     writer.close()
   }
 
-  // reads data from file, returns a batch
-  def readData(path: String, gtype: String): DataBatch = {
-    val file = Source.fromFile(path)
-    val lines = file.getLines().toArray
-    if(lines.size % 24 != 0)
-      println("Records miscount, data might be corrupted")
-    
-    val startDate = DateTime.parse(lines(0).split(",")(0))
-    println("1st date in the file: " + startDate)
-
-    new DataBatch(
-      gtype,
-      lines.map(x => {
-        val items = x.split(",")
-        (items(0), items(1).toDouble)
-      }).to(ListMap)
-    )
-  }
 
   
   // requests data from API and returns a batch or nothing if retrieval failed
@@ -86,7 +69,7 @@ object DataProvider {
 
     val response : Response[String] = quickRequest
       .get(uri"https://data.fingrid.fi/api/datasets/$genCode/data?$queryParams")
-      .header("x-api-key", "<YOUR_API_KEY_HERE>")
+      .header("x-api-key", "536b9a78e52c47b2874fe816858e0adc")
       .send()
 
 
@@ -112,12 +95,11 @@ object DataProvider {
   // from main thread
   var run = true
   // and those 
-  var windCurrent = ("NaN", 0.0)
-  var solarCurrent = ("NaN", 0.0)
-  var hydroCurrent = ("NaN", 0.0)
+  var windCurrent = ("Not updated", 0.0)
+  var solarCurrent = ("Not updated", 0.0)
+  var hydroCurrent = ("Not updated", 0.0)
 
-  // also all the data is 2-3hrs behind current time
-  //  // and for some reason they can get stuck on some? whatever...
+  // data can lag behind current time by 2-3 hrs sometimes
   def lookupActualData(): Unit = {
     //updating all values
     requestData("wind_rtd", DateTime.now.minusMinutes(3), 1, 1) match
@@ -144,6 +126,23 @@ object DataProvider {
       case None => solarCurrent = ("Failed to fetch data", 0)
     }
     
+    // power prod warning
+    if(windCurrent._2 < 500)
+    {
+      println(Console.YELLOW + "\n\nWARNING:\n\tLow wind turbines output (<500 MWh/h)\n\tPlease check turbines status" + Console.RESET)
+    }
+
+    // random warnings
+    if(Random.between(10, 30) > 27)
+    {
+      println(Console.YELLOW + "\n\nWARNING:\n\tHydro turbines synchronization fault\n\tPlease contact the maintenance team" + Console.RESET)
+    }
+    val roll2 = Random.between(15, 100)
+    if(roll2 < 73 && roll2 > 65)
+    {
+      println(Console.RED + "\n\nERROR:\n\tEmergency shutdown was triggered in the turbine hall\n\tContact the maintenance team immediately" + Console.RESET)
+    }
+
     Thread.sleep(60000)
     if(run)
       lookupActualData()
@@ -183,6 +182,26 @@ object DataProvider {
       println("Solar file found, skipping caching...")
     }
 
+    Thread.sleep(5000) 
+
+    val hydroFile = new File("hydro.csv")
+    if(!hydroFile.exists())
+    {
+      requestData("wind_for", DateTime.now.minusMonths(1).withTime(0,0,0,0), 2688, 4, "asc", true) match{
+        case Some(data) => writeData(
+          Right(new DataBatch(
+            data.genType,
+            data.values.map(x => (x._1, x._2 * Random.between(0.44, 0.84)))
+          )), 
+          "hydro.csv")
+        case None => print("ERROR: Failed to cache monthly data")
+      }
+    }
+    else
+    {
+      println("Hydro file found, skipping caching...")
+    }
+
     // 
 
   }
@@ -197,25 +216,25 @@ object REPS {
 
   // sample method for starting data updater
     def act1(): Unit = {
-        println("starting lookup function...")
+        println("Initializing monitoring function...")
         Future { DataProvider.lookupActualData() }
     }
 
     // sample method of displaying current data
     def act2(): Unit = {
-      println("\nCurrent wind prod: " + DataProvider.windCurrent._2 + "MWh/h")
-      println("Last update: " + DataProvider.windCurrent._1 + "\n")
-      println("Current hydro prod: " + DataProvider.hydroCurrent._2 + "MWh/h")
-      println("Last update: " + DataProvider.hydroCurrent._1 + "\n")
-      println("Current solar prod: " + DataProvider.solarCurrent._2 + "Mw/h")
-      println("Last update: " + DataProvider.solarCurrent._1 + "\n")
+      println("\nCurrent wind production: " + DataProvider.windCurrent._2 + " MWh/h")
+      println("Last update timestamp: " + DataProvider.windCurrent._1 + "\n")
+      println("Current hydro production: " + DataProvider.hydroCurrent._2 + " MWh/h")
+      println("Last update timestamp: " + DataProvider.hydroCurrent._1 + "\n")
+      println("Current solar production: " + DataProvider.solarCurrent._2 + " MWh/h")
+      println("Last update timestamp: " + DataProvider.solarCurrent._1 + "\n")
     }
 
     // sample method for caching up data and reading it
     def act3(): Unit = {
+      println("Caching data...")
       DataProvider.cacheMonthlyData()
-      val batch = DataProvider.readData("wind.csv", "wind")
-      println("cache size: " + batch.values.size)
+      println("Data caching complete.")
     }
 
     // The behaviour to analyze data
