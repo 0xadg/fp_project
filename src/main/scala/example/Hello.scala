@@ -80,7 +80,7 @@ object DataProvider {
       Some(new DataBatch(
           gtype,
           json("data").arr.zipWithIndex.collect {
-            case (x, i) if i % skip == 0 => (x("startTime").str, x("value").num)  // using skip to select only num-th records (useful for hourly data)
+            case (x, i) if i % skip == 0 => (x("startTime").str, x("value").num)  // using skip to select only n-th records (useful for hourly data)
           }.to(ListMap)
       ))
     }
@@ -129,18 +129,18 @@ object DataProvider {
     // power prod warning
     if(windCurrent._2 < 500)
     {
-      println(Console.YELLOW + "\num\nWARNING:\num\tLow wind turbines output (<500 MWh/h)\num\tPlease check turbines status" + Console.RESET)
+      println(Console.YELLOW + "\n\nWARNING:\n\tLow wind turbines output (<500 MWh/h)\n\tPlease check turbines status" + Console.RESET)
     }
 
     // random warnings
     if(Random.between(10, 30) > 27)
     {
-      println(Console.YELLOW + "\num\nWARNING:\num\tHydro turbines synchronization fault\num\tPlease contact the maintenance team" + Console.RESET)
+      println(Console.YELLOW + "\n\nWARNING:\n\tHydro turbines synchronization fault\n\tPlease contact the maintenance team" + Console.RESET)
     }
     val roll2 = Random.between(15, 100)
     if(roll2 < 73 && roll2 > 65)
     {
-      println(Console.RED + "\num\nERROR:\num\tEmergency shutdown was triggered in the turbine hall\num\tContact the maintenance team immediately" + Console.RESET)
+      println(Console.RED + "\n\nERROR:\n\tEmergency shutdown was triggered in the turbine hall\n\tContact the maintenance team immediately" + Console.RESET)
     }
 
     Thread.sleep(60000)
@@ -209,7 +209,7 @@ object DataProvider {
 
 object REPS {
     def main(args: Array[String]): Unit = {
-      println("\num--- Renewable Energy Plant System (REPS) ---")
+      println("\n--- Renewable Energy Plant System (REPS) ---")
       act1()
       menu()
     }
@@ -223,11 +223,11 @@ object REPS {
     // sample method of displaying current data
     def act2(): Unit = {
       println("\nCurrent wind production: " + DataProvider.windCurrent._2 + " MWh/h")
-      println("Last update timestamp: " + DataProvider.windCurrent._1 + "\num")
+      println("Last update timestamp: " + DataProvider.windCurrent._1 + "\n")
       println("Current hydro production: " + DataProvider.hydroCurrent._2 + " MWh/h")
-      println("Last update timestamp: " + DataProvider.hydroCurrent._1 + "\num")
+      println("Last update timestamp: " + DataProvider.hydroCurrent._1 + "\n")
       println("Current solar production: " + DataProvider.solarCurrent._2 + " MWh/h")
-      println("Last update timestamp: " + DataProvider.solarCurrent._1 + "\num")
+      println("Last update timestamp: " + DataProvider.solarCurrent._1 + "\n")
     }
 
     // sample method for caching up data and reading it
@@ -262,30 +262,30 @@ object REPS {
   object EnergyControl {
 
     def adjustWindTurbine(): Unit =
-      println("\nAdjusting wind turbine blades, based on wind direction... \nDone.\num")
+      println("\nAdjusting wind turbine blades, based on wind direction... \nDone.\n")
 
     def troubleshootWindTurbine(): Unit = {
       println("\nTroubleshooting wind turbines...")
       Thread.sleep(1000)
-      println("No errors found.\num")
+      println("No errors found.\n")
     }
 
     def adjustSolarPanels(): Unit =
-      println("\nTurning solar panels towards the sun... \nDone.\num")
+      println("\nTurning solar panels towards the sun... \nDone.\n")
 
     def troubleshootSolarPanels(): Unit = {
       println("\nTroubleshooting solar panels...")
       Thread.sleep(1000)
-      println("No errors found.\num")
+      println("No errors found.\n")
     }
 
     def adjustHydroPlant(): Unit =
-      println("\nRegulating the flow rate...\nCompleted.\num")
+      println("\nRegulating the flow rate...\nCompleted.\n")
 
     def troubleshootHydroPlant(): Unit = {
       println("\nTroubleshooting hydro turbines...")
       Thread.sleep(1000)
-      println("No errors found.\num")
+      println("No errors found.\n")
     }
   }
 
@@ -310,7 +310,7 @@ object REPS {
       case "3" => Some("hydro")
       case "4" => menu(); None
       case _ =>
-        println("\nInvalid selection. Returning to main menu.\num")
+        println("\nInvalid selection. Returning to main menu.\n")
         None
     }
   }
@@ -335,7 +335,7 @@ object REPS {
       case "3" =>
         menu()
       case _ =>
-        println("\nInvalid choice.\num")
+        println("\nInvalid choice.\n")
         controlMenu(energyType)(adjustAction, troubleshootAction)
     }
   }
@@ -381,7 +381,7 @@ object REPS {
           case Some("hydro") =>
             controlMenu("Hydro Plant")(EnergyControl.adjustHydroPlant(), EnergyControl.troubleshootHydroPlant())
           case None =>
-            println("\nInvalid generator selection.\num")
+            println("\nInvalid generator selection.\n")
         }
         menu()
       case "2" =>
@@ -397,7 +397,7 @@ object REPS {
         println("Shutting Down REPS!")
         System.exit(0)
       case _ =>
-        println("\nCommand not recognized!\num")
+        println("\nCommand not recognized!\n")
         menu()
     }
   }
@@ -444,7 +444,7 @@ object Utils {
       }
     }
 
-    println(s"\nAggregated data by $resolution:\num")
+    println(s"\nAggregated data by $resolution:\n")
 
     grouped.toSeq.sortBy(_._1).foreach { case (time, entries) =>
       val values = entries.map(_._2).toList
