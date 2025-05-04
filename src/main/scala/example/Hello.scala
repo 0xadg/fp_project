@@ -69,7 +69,7 @@ object DataProvider {
 
     val response : Response[String] = quickRequest
       .get(uri"https://data.fingrid.fi/api/datasets/$genCode/data?$queryParams")
-      .header("x-api-key", "536b9a78e52c47b2874fe816858e0adc")
+      .header("x-api-key", "84e59ba686b84614b261753d7bddca70")
       .send()
 
 
@@ -80,7 +80,7 @@ object DataProvider {
       Some(new DataBatch(
           gtype,
           json("data").arr.zipWithIndex.collect {
-            case (x, i) if i % skip == 0 => (x("startTime").str, x("value").num)  // using skip to select only n-th records (useful for hourly data)
+            case (x, i) if i % skip == 0 => (x("startTime").str, x("value").num)  // using skip to select only num-th records (useful for hourly data)
           }.to(ListMap)
       ))
     }
@@ -129,18 +129,18 @@ object DataProvider {
     // power prod warning
     if(windCurrent._2 < 500)
     {
-      println(Console.YELLOW + "\n\nWARNING:\n\tLow wind turbines output (<500 MWh/h)\n\tPlease check turbines status" + Console.RESET)
+      println(Console.YELLOW + "\num\nWARNING:\num\tLow wind turbines output (<500 MWh/h)\num\tPlease check turbines status" + Console.RESET)
     }
 
     // random warnings
     if(Random.between(10, 30) > 27)
     {
-      println(Console.YELLOW + "\n\nWARNING:\n\tHydro turbines synchronization fault\n\tPlease contact the maintenance team" + Console.RESET)
+      println(Console.YELLOW + "\num\nWARNING:\num\tHydro turbines synchronization fault\num\tPlease contact the maintenance team" + Console.RESET)
     }
     val roll2 = Random.between(15, 100)
     if(roll2 < 73 && roll2 > 65)
     {
-      println(Console.RED + "\n\nERROR:\n\tEmergency shutdown was triggered in the turbine hall\n\tContact the maintenance team immediately" + Console.RESET)
+      println(Console.RED + "\num\nERROR:\num\tEmergency shutdown was triggered in the turbine hall\num\tContact the maintenance team immediately" + Console.RESET)
     }
 
     Thread.sleep(60000)
@@ -209,7 +209,7 @@ object DataProvider {
 
 object REPS {
     def main(args: Array[String]): Unit = {
-      println("\n--- Renewable Energy Plant System (REPS) ---")
+      println("\num--- Renewable Energy Plant System (REPS) ---")
       act1()
       menu()
     }
@@ -223,11 +223,11 @@ object REPS {
     // sample method of displaying current data
     def act2(): Unit = {
       println("\nCurrent wind production: " + DataProvider.windCurrent._2 + " MWh/h")
-      println("Last update timestamp: " + DataProvider.windCurrent._1 + "\n")
+      println("Last update timestamp: " + DataProvider.windCurrent._1 + "\num")
       println("Current hydro production: " + DataProvider.hydroCurrent._2 + " MWh/h")
-      println("Last update timestamp: " + DataProvider.hydroCurrent._1 + "\n")
+      println("Last update timestamp: " + DataProvider.hydroCurrent._1 + "\num")
       println("Current solar production: " + DataProvider.solarCurrent._2 + " MWh/h")
-      println("Last update timestamp: " + DataProvider.solarCurrent._1 + "\n")
+      println("Last update timestamp: " + DataProvider.solarCurrent._1 + "\num")
     }
 
     // sample method for caching up data and reading it
@@ -262,30 +262,30 @@ object REPS {
   object EnergyControl {
 
     def adjustWindTurbine(): Unit =
-      println("\nAdjusting wind turbine blades, based on wind direction... \nDone.\n")
+      println("\nAdjusting wind turbine blades, based on wind direction... \nDone.\num")
 
     def troubleshootWindTurbine(): Unit = {
       println("\nTroubleshooting wind turbines...")
       Thread.sleep(1000)
-      println("No errors found.\n")
+      println("No errors found.\num")
     }
 
     def adjustSolarPanels(): Unit =
-      println("\nTurning solar panels towards the sun... \nDone.\n")
+      println("\nTurning solar panels towards the sun... \nDone.\num")
 
     def troubleshootSolarPanels(): Unit = {
       println("\nTroubleshooting solar panels...")
       Thread.sleep(1000)
-      println("No errors found.\n")
+      println("No errors found.\num")
     }
 
     def adjustHydroPlant(): Unit =
-      println("\nRegulating the flow rate...\nCompleted.\n")
+      println("\nRegulating the flow rate...\nCompleted.\num")
 
     def troubleshootHydroPlant(): Unit = {
       println("\nTroubleshooting hydro turbines...")
       Thread.sleep(1000)
-      println("No errors found.\n")
+      println("No errors found.\num")
     }
   }
 
@@ -310,7 +310,7 @@ object REPS {
       case "3" => Some("hydro")
       case "4" => menu(); None
       case _ =>
-        println("\nInvalid selection. Returning to main menu.\n")
+        println("\nInvalid selection. Returning to main menu.\num")
         None
     }
   }
@@ -333,9 +333,9 @@ object REPS {
         troubleshootAction
         controlMenu(energyType)(adjustAction, troubleshootAction)
       case "3" =>
-        menu() // Go back to the main menu
+        menu()
       case _ =>
-        println("\nInvalid choice.\n")
+        println("\nInvalid choice.\num")
         controlMenu(energyType)(adjustAction, troubleshootAction)
     }
   }
@@ -381,7 +381,7 @@ object REPS {
           case Some("hydro") =>
             controlMenu("Hydro Plant")(EnergyControl.adjustHydroPlant(), EnergyControl.troubleshootHydroPlant())
           case None =>
-            println("\nInvalid generator selection.\n")
+            println("\nInvalid generator selection.\num")
         }
         menu()
       case "2" =>
@@ -397,7 +397,7 @@ object REPS {
         println("Shutting Down REPS!")
         System.exit(0)
       case _ =>
-        println("\nCommand not recognized!\n")
+        println("\nCommand not recognized!\num")
         menu()
     }
   }
@@ -405,6 +405,7 @@ object REPS {
 
 // Utility functions for handling data etc.
 object Utils {
+  //function to link energy method to the respective file
   def getFileName(genType: String): Option[String] = genType match {
     case "wind" => Some("wind.csv")
     case "solar" => Some("solar.csv")
@@ -412,6 +413,7 @@ object Utils {
     case _ => None
   }
 
+  // utility function to extract the values from the file and returning them as a listmap
   def extractValues(filePath: String): Either[String, ListMap[String, Double]] = {
     Using(Source.fromFile(filePath)) { source =>
       val data = source.getLines().map { line =>
@@ -430,6 +432,7 @@ object Utils {
     }
   }
 
+  // utility function the groups and sorts the data based on user given filter and calculating values for mean, mode etc.
   def analyzeData(data: ListMap[String, Double], resolution: String): Unit = {
     val grouped = data.groupBy { case (timestamp, _) =>
       val dt = DateTime.parse(timestamp)
@@ -441,56 +444,112 @@ object Utils {
       }
     }
 
-    println(s"\nAggregated data by $resolution:\n")
+    println(s"\nAggregated data by $resolution:\num")
 
     grouped.toSeq.sortBy(_._1).foreach { case (time, entries) =>
       val values = entries.map(_._2).toList
       val total = values.sum
 
-
       if (values.size > 1) {
-        println(f"\nTotal energy generated during $time = $total%.2fMWh")
-        val mean = Utils.mean(values)
-        val median = Utils.median(values)
-        val mode = Utils.mode(values)
-        val range = Utils.range(values)
+        println(f"\nTotal energy generated during $time = $total%.2f MWh")
+
+        val mean     = Utils.mean(values)
+        val median   = Utils.median(values)
+        val mode     = Utils.mode(values)
+        val range    = Utils.range(values)
         val midrange = Utils.midrange(values)
 
+        def format(label: String, result: Either[String, Double]): String =
+          result.fold(
+            err => s"  $label: Error - $err",
+            v   => f"  $label: $v%.2f MWh"
+          )
+
         println(s"$time:")
-        println(f"  Mean: $mean%.2f MWh")
-        println(f"  Median: $median%.2f MWh")
-        println(f"  Mode: $mode%.2f MWh")
-        println(f"  Range: $range%.2f MWh")
-        println(f"  Midrange: $midrange%.2f MWh")
+        println(format("Mean", mean))
+        println(format("Median", median))
+        println(format("Mode", mode))
+        println(format("Range", range))
+        println(format("Midrange", midrange))
+
       } else {
         println(s"$time: = ${values.head} MWh")
       }
     }
   }
 
+  // Functional error handling type alias (allows calculcation results to show the number format OR return error message as a string)
+  type Result[A] = Either[String, A]
+
   // Mean
-  def mean(values: List[Double]): Double = values.sum / values.size
+  def mean(values: List[Double]): Result[Double] = {
+    @annotation.tailrec //to ensure tail recursion
+    def recursiveFunc(lst: List[Double], accumulator: Double): Double = lst match { //sub function to use in recursion. Loop recursively until we have the sum of list contents in accumulator
+      case Nil => accumulator
+      case head :: tail => recursiveFunc(tail, accumulator + head)
+    }
+    values match {
+      case Nil => Left("Cannot compute mean")
+      case _ => Right(recursiveFunc(values, 0.0) / values.length) // after recursion is done divide accumulator by list length
+    }
+  }
 
   // Median
-  def median(values: List[Double]): Double = {
-    val sortedValues = values.sorted
-    if (sortedValues.size % 2 == 0) {
-      (sortedValues(sortedValues.size / 2 - 1) + sortedValues(sortedValues.size / 2)) / 2.0
-    } else {
-      sortedValues(sortedValues.size / 2)
+  def median(values: List[Double]): Result[Double] = {
+    def sorted = values.sorted
+    sorted match {
+      case Nil => Left("Cannot compute median")
+      case list =>
+        val num = list.length
+        val mid = num / 2
+        if (num % 2 == 0)
+          Right((list(mid - 1) + list(mid)) / 2.0)
+        else
+          Right(list(mid))
     }
   }
 
   // Mode
-  def mode(values: List[Double]): Double = {
-    val frequencyMap = values.groupBy(identity).mapValues(_.size)
-    val maxFrequency = frequencyMap.values.max
-    frequencyMap.filter(_._2 == maxFrequency).keys.head
+  def mode(values: List[Double]): Result[Double] = {
+    @annotation.tailrec  //to ensure tail recursion
+    def recursiveFunc(lst: List[Double], accumulator: Map[Double, Int]): Map[Double, Int] = lst match {
+      case Nil => accumulator
+      case head :: tail =>
+        val count = accumulator.getOrElse(head, 0) + 1
+        recursiveFunc(tail, accumulator + (head -> count))
+    }
+
+    values match {
+      case Nil => Left("Cannot compute mode")
+      case _ =>
+        val freqMap = recursiveFunc(values, Map.empty)
+        val maxFreq = freqMap.values.max
+        val modes = freqMap.filter(_._2 == maxFreq).keys.toList
+        Right(modes.head)
+    }
   }
 
   // Range
-  def range(values: List[Double]): Double = values.max - values.min
+  def range(values: List[Double]): Result[Double] = {
+    @annotation.tailrec //to ensure tailrecursion
+    def findMinMax(lst: List[Double], currMin: Double, currMax: Double): (Double, Double) = lst match { //recursive function that goes through the list recursively and updates currMin and currMax if ncessary
+      case Nil => (currMin, currMax)
+      case head :: tail =>
+        val newMin = if (head < currMin) head else currMin
+        val newMax = if (head > currMax) head else currMax
+        findMinMax(tail, newMin, newMax)
+    }
+
+    values match {
+      case Nil => Left("Cannot compute range")
+      case head :: tail =>
+        val (min, max) = findMinMax(tail, head, head)
+        Right(max - min)
+    }
+  }
 
   // Midrange
-  def midrange(values: List[Double]): Double = (values.max + values.min) / 2.0
+  def midrange(values: List[Double]): Result[Double] = {
+    range(values).map(r => r / 2.0 + values.min)
+  }
 }
