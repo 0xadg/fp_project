@@ -69,7 +69,7 @@ object DataProvider {
 
     val response : Response[String] = quickRequest
       .get(uri"https://data.fingrid.fi/api/datasets/$genCode/data?$queryParams")
-      .header("x-api-key", "84e59ba686b84614b261753d7bddca70")
+      .header("x-api-key", "API_KEY_HERE")
       .send()
 
 
