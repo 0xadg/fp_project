@@ -11,6 +11,8 @@ import scala.util.Random
 import scala.concurrent._
 import ExecutionContext.Implicits.global
 
+// done by Jere Seilo and Andrey Klenov
+
 // simple data storage structure
 // stores a day worth of data for specific generator type
 // list map ensures the order is kept
